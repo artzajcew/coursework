@@ -27,20 +27,22 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
           <div style={{ width: '24px' }}></div>
         )}
         <div className="nav-brand" onClick={() => setCurrentPage('home')}>
-          TourCompany
+          Турист
         </div>
         {!isLoggedIn && (
           <div style={{ display: 'flex', gap: '1rem', marginRight: '1rem' }}>
             <button 
               onClick={() => setCurrentPage('home')}
               style={{
-                background: currentPage === 'home' ? '#3498db' : '#ecf0f1',
-                border: '1px solid #bdc3c7',
-                color: '#2c3e50',
+                background: currentPage === 'home' ? '#27ae60' : 'transparent',
+                border: currentPage === 'home' ? 'none' : '1px solid #e0e0e0',
+                color: currentPage === 'home' ? 'white' : '#2c2c2c',
                 cursor: 'pointer',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
                 padding: '0.5rem 1rem',
-                borderRadius: '4px',
+                borderRadius: '8px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease'
               }}
             >
               Главная
@@ -48,13 +50,15 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
             <button 
               onClick={() => setCurrentPage('login')}
               style={{
-                background: currentPage === 'login' ? '#3498db' : '#ecf0f1',
-                border: '1px solid #bdc3c7',
-                color: '#2c3e50',
+                background: currentPage === 'login' ? '#27ae60' : 'transparent',
+                border: currentPage === 'login' ? 'none' : '1px solid #e0e0e0',
+                color: currentPage === 'login' ? 'white' : '#2c2c2c',
                 cursor: 'pointer',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
                 padding: '0.5rem 1rem',
-                borderRadius: '4px',
+                borderRadius: '8px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease'
               }}
             >
               Вход
@@ -62,13 +66,15 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
             <button 
               onClick={() => setCurrentPage('register')}
               style={{
-                background: currentPage === 'register' ? '#3498db' : '#ecf0f1',
-                border: '1px solid #bdc3c7',
-                color: '#2c3e50',
+                background: currentPage === 'register' ? '#27ae60' : 'transparent',
+                border: currentPage === 'register' ? 'none' : '1px solid #e0e0e0',
+                color: currentPage === 'register' ? 'white' : '#2c2c2c',
                 cursor: 'pointer',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
                 padding: '0.5rem 1rem',
-                borderRadius: '4px',
+                borderRadius: '8px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease'
               }}
             >
               Регистрация
@@ -86,8 +92,8 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
             top: '60px',
             width: '250px',
             height: 'calc(100vh - 60px)',
-            backgroundColor: '#2c3e50',
-            color: 'white',
+            backgroundColor: '#f5f5f5',
+            color: '#2c2c2c',
             padding: '1rem',
             transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
             transition: 'transform 0.3s',
@@ -103,8 +109,13 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
                 style={{
                   padding: '1rem',
                   cursor: 'pointer',
-                  borderBottom: '1px solid #34495e',
-                  backgroundColor: currentPage === 'home' ? '#34495e' : 'transparent',
+                  borderBottom: '1px solid #e0e0e0',
+                  backgroundColor: currentPage === 'home' ? '#e8f5e9' : 'transparent',
+                  color: '#2c2c2c',
+                  borderRadius: '8px',
+                  marginBottom: '0.5rem',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 Путевки
@@ -115,8 +126,12 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
                 style={{
                   padding: '1rem',
                   cursor: 'pointer',
-                  borderBottom: '1px solid #34495e',
-                  backgroundColor: '#e74c3c',
+                  borderBottom: '1px solid #e0e0e0',
+                  backgroundColor: '#27ae60',
+                  color: 'white',
+                  borderRadius: '8px',
+                  fontWeight: '500',
+                  marginTop: '1rem'
                 }}
               >
                 Выход
@@ -130,8 +145,13 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
                 style={{
                   padding: '1rem',
                   cursor: 'pointer',
-                  borderBottom: '1px solid #34495e',
-                  backgroundColor: currentPage === 'sales-journal' ? '#34495e' : 'transparent',
+                  borderBottom: '1px solid #e0e0e0',
+                  backgroundColor: currentPage === 'sales-journal' ? '#e8f5e9' : 'transparent',
+                  color: '#2c2c2c',
+                  borderRadius: '8px',
+                  marginBottom: '0.5rem',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 Журнал продаж
@@ -142,8 +162,13 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
                 style={{
                   padding: '1rem',
                   cursor: 'pointer',
-                  borderBottom: '1px solid #34495e',
-                  backgroundColor: currentPage === 'clients-journal' ? '#34495e' : 'transparent',
+                  borderBottom: '1px solid #e0e0e0',
+                  backgroundColor: currentPage === 'clients-journal' ? '#e8f5e9' : 'transparent',
+                  color: '#2c2c2c',
+                  borderRadius: '8px',
+                  marginBottom: '0.5rem',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 Журнал клиентов
@@ -154,8 +179,13 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
                 style={{
                   padding: '1rem',
                   cursor: 'pointer',
-                  borderBottom: '1px solid #34495e',
-                  backgroundColor: currentPage === 'tours-management' ? '#34495e' : 'transparent',
+                  borderBottom: '1px solid #e0e0e0',
+                  backgroundColor: currentPage === 'tours-management' ? '#e8f5e9' : 'transparent',
+                  color: '#2c2c2c',
+                  borderRadius: '8px',
+                  marginBottom: '0.5rem',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 Управление турами
@@ -166,8 +196,13 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
                 style={{
                   padding: '1rem',
                   cursor: 'pointer',
-                  borderBottom: '1px solid #34495e',
-                  backgroundColor: currentPage === 'statistics' ? '#34495e' : 'transparent',
+                  borderBottom: '1px solid #e0e0e0',
+                  backgroundColor: currentPage === 'statistics' ? '#e8f5e9' : 'transparent',
+                  color: '#2c2c2c',
+                  borderRadius: '8px',
+                  marginBottom: '0.5rem',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 Статистика
@@ -178,8 +213,12 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
                 style={{
                   padding: '1rem',
                   cursor: 'pointer',
-                  borderBottom: '1px solid #34495e',
-                  backgroundColor: '#e74c3c',
+                  borderBottom: '1px solid #e0e0e0',
+                  backgroundColor: '#27ae60',
+                  color: 'white',
+                  borderRadius: '8px',
+                  fontWeight: '500',
+                  marginTop: '1rem'
                 }}
               >
                 Выход

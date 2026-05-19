@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
 
+// Импорт изображений
+import thailandImg from '../img/thailand.jpg';
+import egyptImg from '../img/egypt.jpg';
+import spainImg from '../img/spain.jpg';
+import switzerlandImg from '../img/switzerland.jpg';
+import italyImg from '../img/italy.jpg';
+import mexicoImg from '../img/mexico.jpg';
+
+// Если у вас другие названия файлов, вот соответствие:
+// paris.jpg - для Франции/Парижа (если нужно добавить)
+// Вы можете добавить другие изображения по аналогии
+
 function HomePage({ setCurrentPage }) {
   const [tours, setTours] = useState([]);
   const [hotTours, setHotTours] = useState([]);
@@ -12,7 +24,7 @@ function HomePage({ setCurrentPage }) {
   });
 
   useEffect(() => {
-    // Mock данные для демонстрации
+    // Mock данные с реальными изображениями
     const mockTours = [
       {
         id: 1,
@@ -20,7 +32,8 @@ function HomePage({ setCurrentPage }) {
         description: 'Прекрасный отдых на пляжах Таиланда с посещением храмов и нац. парков',
         price: 45000,
         duration: '7 дней',
-        image: '🏖️',
+        image: thailandImg,
+        imageAlt: 'Пляжи Таиланда',
         isHot: true,
       },
       {
@@ -29,7 +42,8 @@ function HomePage({ setCurrentPage }) {
         description: 'Путешествие по древним пирамидам и истории фараонов',
         price: 55000,
         duration: '10 дней',
-        image: '🏜️',
+        image: egyptImg,
+        imageAlt: 'Пирамиды Египта',
         isHot: true,
       },
       {
@@ -38,7 +52,8 @@ function HomePage({ setCurrentPage }) {
         description: 'Барселона, Мадрид и пляжи Средиземного моря',
         price: 50000,
         duration: '8 дней',
-        image: '🏛️',
+        image: spainImg,
+        imageAlt: 'Архитектура Испании',
         isHot: false,
       },
       {
@@ -47,7 +62,8 @@ function HomePage({ setCurrentPage }) {
         description: 'Горы, озера и швейцарский шоколад',
         price: 65000,
         duration: '9 дней',
-        image: '⛰️',
+        image: switzerlandImg,
+        imageAlt: 'Горы Швейцарии',
         isHot: false,
       },
       {
@@ -56,7 +72,8 @@ function HomePage({ setCurrentPage }) {
         description: 'Венеция, Рим, Флоренция и итальянская кухня',
         price: 52000,
         duration: '8 дней',
-        image: '🇮🇹',
+        image: italyImg,
+        imageAlt: 'Колизей в Риме',
         isHot: false,
       },
       {
@@ -65,7 +82,8 @@ function HomePage({ setCurrentPage }) {
         description: 'Древние храмы ацтеков и райские пляжи',
         price: 48000,
         duration: '7 дней',
-        image: '🌴',
+        image: mexicoImg,
+        imageAlt: 'Пляжи Мексики',
         isHot: true,
       },
     ];
@@ -90,7 +108,6 @@ function HomePage({ setCurrentPage }) {
   const handleSubmitApplication = (e) => {
     e.preventDefault();
     if (formData.fullName && formData.email && formData.phone) {
-      // Сохраняем заявку в localStorage
       const applications = JSON.parse(localStorage.getItem('applications') || '[]');
       applications.push({
         id: Date.now(),
@@ -111,7 +128,7 @@ function HomePage({ setCurrentPage }) {
 
   return (
     <div className="home-page">
-      <h1 className="page-title">Добро пожаловать в TourCompany</h1>
+      <h1 className="page-title">Добро пожаловать в Турист</h1>
       
       {/* Горящие путевки */}
       {hotTours.length > 0 && (
@@ -120,7 +137,13 @@ function HomePage({ setCurrentPage }) {
           <div className="tours-grid">
             {hotTours.map(tour => (
               <div key={tour.id} className="tour-card hot">
-                <div className="tour-image">{tour.image}</div>
+                <div className="tour-image">
+                  <img 
+                    src={tour.image} 
+                    alt={tour.imageAlt}
+                    className="tour-img"
+                  />
+                </div>
                 <div className="tour-content">
                   <span className="hot-badge">ГОРЯЧЕЕ ПРЕДЛОЖЕНИЕ</span>
                   <h3 className="tour-title">{tour.title}</h3>
@@ -147,7 +170,13 @@ function HomePage({ setCurrentPage }) {
       <div className="tours-grid">
         {tours.map(tour => (
           <div key={tour.id} className={`tour-card ${tour.isHot ? 'hot' : ''}`}>
-            <div className="tour-image">{tour.image}</div>
+            <div className="tour-image">
+              <img 
+                src={tour.image} 
+                alt={tour.imageAlt}
+                className="tour-img"
+              />
+            </div>
             <div className="tour-content">
               {tour.isHot && <span className="hot-badge">ГОРЯЧЕЕ ПРЕДЛОЖЕНИЕ</span>}
               <h3 className="tour-title">{tour.title}</h3>

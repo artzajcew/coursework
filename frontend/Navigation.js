@@ -5,7 +5,7 @@ function Navigation({ currentPage, setCurrentPage, isLoggedIn, userRole, onLogou
     <nav className="navbar">
       <div className="nav-container">
         <div className="nav-brand" onClick={() => setCurrentPage('home')}>
-          ✈️ TourCompany
+          ✈️ Турист
         </div>
         <ul className="nav-links">
           {!isLoggedIn ? (
