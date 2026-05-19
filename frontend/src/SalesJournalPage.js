@@ -148,7 +148,7 @@ function SalesJournalPage() {
                       style={{ width: '100%' }}
                     />
                   ) : (
-                    sale.sale_date
+                    new Date(sale.sale_date).toLocaleDateString('ru-RU')
                   )}
                 </td>
                 <td>

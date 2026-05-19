@@ -204,7 +204,7 @@ function StatisticsPage() {
           <h2>Потери из-за скидок</h2>
           {losses ? (
             <div className="stat-card">
-              <p>Общие потери: <strong>₽ {losses.total_losses?.toLocaleString() || 0}</strong></p>
+              <p>Общие потери: <strong>₽ {Math.round(losses.total_losses || 0).toLocaleString()}</strong></p>
               <p>Количество клиентов со скидкой: <strong>{losses.clients_with_discount || 0}</strong></p>
             </div>
           ) : (

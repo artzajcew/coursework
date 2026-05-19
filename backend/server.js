@@ -191,14 +191,14 @@ app.delete('/api/clients/:id/active-tours', async (req, res) => {
 });
 
 app.post('/api/sales', async (req, res) => {
-  const { client_id, tour_name, quantity, sale_date } = req.body;
+  const { client_id, tour_id, quantity, sale_date } = req.body;
 
   try {
     // Добавляем продажу
     const salesResult = await pool.query(
-  `INSERT INTO sales (tour_id, quantity, sale_date) 
-   VALUES ($1, $2, $3) RETURNING *`,
-  [tour_id, quantity, sale_date]
+  `INSERT INTO sales (tour_id, quantity, sale_date, available_left)
+   VALUES ($1, $2, $3, $4) RETURNING *`,
+  [tour_id, quantity, sale_date, 0]
 );
 
 
@@ -343,14 +343,12 @@ app.get('/api/clients/by-city/:city', async (req, res) => {
 app.get('/api/tours/by-date/:date', async (req, res) => {
   const { date } = req.params;
   try {
-    const result = await pool.query(
-      'SELECT * FROM tours WHERE start_date = $1',
-      [date]
-    );
-    res.json({
-      exists: result.rows.length > 0,
-      tours: result.rows
-    });
+    const result = await pool.query(`
+      SELECT * FROM tours 
+      WHERE start_date::date = $1::date
+      ORDER BY start_date ASC
+    `, [date]);
+    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -406,13 +404,14 @@ app.get('/api/loss-from-discounts', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
-        SUM(t.price * c.discount / 100) as total_loss
+        COUNT(DISTINCT c.id) as clients_with_discount,
+        COALESCE(SUM(s.quantity * t.price * c.discount / 100), 0) as total_losses
       FROM clients c
-      JOIN client_tour ct ON c.id = ct.client_id
-      JOIN tours t ON ct.tour_id = t.id
+      LEFT JOIN sales s ON c.id = (SELECT client_id FROM client_tour WHERE tour_id = s.tour_id LIMIT 1)
+      LEFT JOIN tours t ON s.tour_id = t.id
       WHERE c.discount > 0
     `);
-    res.json({ total_loss: result.rows[0].total_loss || 0 });
+    res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -459,12 +458,13 @@ app.get('/api/tours/top-demand', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
+        t.id,
         t.name,
         t.city,
         t.price,
         SUM(s.quantity) as total_sold
       FROM tours t
-      JOIN sales s ON t.name = s.tour_name
+      JOIN sales s ON t.id = s.tour_id
       GROUP BY t.id, t.name, t.city, t.price
       ORDER BY total_sold DESC
       LIMIT 5
@@ -474,7 +474,6 @@ app.get('/api/tours/top-demand', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 // ========== ДОБАВЛЕНИЕ И УДАЛЕНИЕ КЛИЕНТОВ ДЛЯ ЗАДАННОЙ ПУТЕВКИ ==========
 
 /**
