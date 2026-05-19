@@ -147,7 +147,7 @@ function ClientsJournalPage() {
               <th>Телефон</th>
               <th>Паспорт</th>
               <th>Дата регистрации</th>
-              <th>Актуальные путевки</th>
+              <th>Мой тур</th>
               <th>Куплено путевок</th>
               <th>Скидка (%)</th>
               <th>Действия</th>
@@ -196,7 +196,7 @@ function ClientsJournalPage() {
                   {client.created_at ? new Date(client.created_at).toLocaleDateString('ru-RU') : '-'}
                 </td>
                 <td>
-                  {clientActiveTours[client.id]?.map(tour => tour.name).join(', ') || '-'}
+                  {clientActiveTours[client.id]?.name || '-'}
                 </td>
                 <td>
                   {editingId === client.id ? (

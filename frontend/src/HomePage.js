@@ -27,14 +27,29 @@ function HomePage({ setCurrentPage }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [myTour, setMyTour] = useState(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
+      fetchMyTour(userData.id);
     }
     fetchTours();
   }, []);
+
+  const fetchMyTour = async (userId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/clients/${userId}/active-tours`);
+      if (response.ok) {
+        const data = await response.json();
+        setMyTour(data);
+      }
+    } catch (err) {
+      console.error('Ошибка загрузки моего тура:', err);
+    }
+  };
 
   const fetchTours = async () => {
     try {
@@ -70,6 +85,14 @@ function HomePage({ setCurrentPage }) {
     }
 
     try {
+      // Удаляем старую путевку если она есть
+      await fetch(`http://localhost:3000/api/clients/${user.id}/active-tours`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).catch(() => {}); // Игнорируем ошибку если нет старой путевки
+
       // Создаем запись в client_tour
       const clientTourResponse = await fetch('http://localhost:3000/api/client-tour', {
         method: 'POST',
@@ -96,7 +119,7 @@ function HomePage({ setCurrentPage }) {
         },
         body: JSON.stringify({
           client_id: user.id,
-          tour_name: selectedTour.name,
+          tour_id: selectedTour.id,
           quantity: 1,
           sale_date: new Date().toISOString().split('T')[0],
         }),
@@ -149,28 +172,26 @@ function HomePage({ setCurrentPage }) {
       
       {error && <div style={{ color: 'red', marginBottom: '1rem' }}>Ошибка: {error}</div>}
       
-      {user && user.type === 'client' && getActiveClientTours().length > 0 && (
+      {user && user.type === 'client' && myTour && (
         <>
-          <h2 className="section-title">📋 Мои актуальные путевки</h2>
+          <h2 className="section-title">📋 Мой тур</h2>
           <div className="tours-grid">
-            {getActiveClientTours().map(tour => (
-              <div key={tour.id} className="tour-card">
-                <div className="tour-image" style={{ backgroundColor: '#27ae60' }}>
-                  {tour.city}
-                </div>
-                <div className="tour-content">
-                  <h3 className="tour-title">{tour.name}</h3>
-                  <p className="tour-description">Путешествие</p>
-                  <div className="tour-meta">
-                    <span>Начало: {new Date(tour.start_date).toLocaleDateString('ru-RU')}</span>
-                  </div>
-                  <div className="tour-meta">
-                    <span>Конец: {new Date(tour.end_date).toLocaleDateString('ru-RU')}</span>
-                  </div>
-                  <div className="tour-price">₽ {tour.price.toLocaleString()}</div>
-                </div>
+            <div key={myTour.id} className="tour-card">
+              <div className="tour-image" style={{ backgroundColor: '#27ae60' }}>
+                {myTour.city}
               </div>
-            ))}
+              <div className="tour-content">
+                <h3 className="tour-title">{myTour.name}</h3>
+                <p className="tour-description">Путешествие</p>
+                <div className="tour-meta">
+                  <span>Начало: {new Date(myTour.start_date).toLocaleDateString('ru-RU')}</span>
+                </div>
+                <div className="tour-meta">
+                  <span>Конец: {new Date(myTour.end_date).toLocaleDateString('ru-RU')}</span>
+                </div>
+                <div className="tour-price">₽ {myTour.price.toLocaleString()}</div>
+              </div>
+            </div>
           </div>
         </>
       )}

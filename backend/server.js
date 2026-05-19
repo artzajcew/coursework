@@ -177,16 +177,31 @@ app.get('/api/sales', async (req, res) => {
   }
 });
 
+app.delete('/api/clients/:id/active-tours', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query(`
+      DELETE FROM client_tour 
+      WHERE client_id = $1
+    `, [id]);
+    res.json({ message: 'Старая путевка удалена' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/sales', async (req, res) => {
   const { client_id, tour_name, quantity, sale_date } = req.body;
 
   try {
     // Добавляем продажу
     const salesResult = await pool.query(
-      `INSERT INTO sales (client_id, tour_name, quantity, sale_date) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [client_id, tour_name, quantity, sale_date]
-    );
+  `INSERT INTO sales (tour_id, quantity, sale_date) 
+   VALUES ($1, $2, $3) RETURNING *`,
+  [tour_id, quantity, sale_date]
+);
+
+
 
     // Обновляем счетчик купленных путевок
     await pool.query(
@@ -261,9 +276,9 @@ app.get('/api/clients/:id/active-tours', async (req, res) => {
       SELECT t.* FROM tours t
       JOIN client_tour ct ON t.id = ct.tour_id
       WHERE ct.client_id = $1 AND t.end_date >= $2
-      ORDER BY t.start_date ASC
+      LIMIT 1
     `, [id, today]);
-    res.json(result.rows);
+    res.json(result.rows[0] || null);
   } catch (err) {
     console.error('GET active tours error:', err);
     res.status(500).json({ error: err.message });
@@ -777,19 +792,6 @@ app.post('/api/hash-password', async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     res.json({ password, hash: hashedPassword });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/sales', async (req, res) => {
-  const { client_id, tour_id, quantity, available_left, sale_date } = req.body;
-  try {
-    const result = await pool.query(
-      'INSERT INTO sales (client_id, tour_id, quantity, available_left, sale_date) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [client_id, tour_id, quantity || 1, available_left || 0, sale_date || new Date().toISOString().split('T')[0]]
-    );
-    res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
