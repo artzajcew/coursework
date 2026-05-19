@@ -9,6 +9,16 @@ const calculateDuration = (startDate, endDate) => {
   return diffDays;
 };
 
+const isHotTour = (startDate) => {
+  if (!startDate) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+  const daysUntilStart = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
+  return daysUntilStart >= 0 && daysUntilStart <= 5;
+};
+
 function HomePage({ setCurrentPage }) {
   const [tours, setTours] = useState([]);
   const [hotTours, setHotTours] = useState([]);
@@ -36,12 +46,7 @@ function HomePage({ setCurrentPage }) {
       const data = await response.json();
       
       setTours(data);
-      
-      const hotResponse = await fetch('http://localhost:3000/api/tours');
-      if (hotResponse.ok) {
-        const allTours = await hotResponse.json();
-        setHotTours(allTours.filter(t => t.is_hot === true));
-      }
+      setHotTours(data.filter(t => isHotTour(t.start_date)));
     } catch (err) {
       setError(err.message);
       console.error('Ошибка загрузки туров:', err);
@@ -124,7 +129,7 @@ function HomePage({ setCurrentPage }) {
       
       {hotTours.length > 0 && (
         <>
-          <h2 className="section-title">Выгодные путевки</h2>
+          <h2 className="section-title">🔥 Горящие туры</h2>
           <div className="tours-grid">
             {hotTours.map(tour => (
               <div key={tour.id} className="tour-card hot">
@@ -132,9 +137,9 @@ function HomePage({ setCurrentPage }) {
                   {tour.city}
                 </div>
                 <div className="tour-content">
-                  <span className="hot-badge">ВЫГОДНОЕ ПРЕДЛОЖЕНИЕ</span>
+                  <span className="hot-badge">🔥 ГОРЯЩИЙ ТУР</span>
                   <h3 className="tour-title">{tour.name}</h3>
-                  <p className="tour-description">{tour.description || 'Путешествие'}</p>
+                  <p className="tour-description">Путешествие</p>
                   <div className="tour-meta">
                     <span>Дней: {calculateDuration(tour.start_date, tour.end_date)}</span>
                   </div>
@@ -160,9 +165,9 @@ function HomePage({ setCurrentPage }) {
               {tour.city}
             </div>
             <div className="tour-content">
-              {hotTours.some(t => t.id === tour.id) && <span className="hot-badge">ВЫГОДНОЕ ПРЕДЛОЖЕНИЕ</span>}
+              {hotTours.some(t => t.id === tour.id) && <span className="hot-badge">🔥 ГОРЯЩИЙ ТУР</span>}
               <h3 className="tour-title">{tour.name}</h3>
-              <p className="tour-description">{tour.description || 'Путешествие'}</p>
+              <p className="tour-description">Путешествие</p>
               <div className="tour-meta">
                 <span>Дней: {calculateDuration(tour.start_date, tour.end_date)}</span>
               </div>
@@ -192,10 +197,9 @@ function HomePage({ setCurrentPage }) {
               <div style={{ marginTop: '1rem', lineHeight: '1.8' }}>
                 <p><strong>Город:</strong> {selectedTour.city}</p>
                 <p><strong>Цена:</strong> ₽ {selectedTour.price.toLocaleString()}</p>
-                <p><strong>Длительность:</strong> {selectedTour.duration || 7} дней</p>
+                <p><strong>Длительность:</strong> {calculateDuration(selectedTour.start_date, selectedTour.end_date)} дней</p>
                 <p><strong>Начало:</strong> {new Date(selectedTour.start_date).toISOString().split('T')[0]}</p>
                 <p><strong>Окончание:</strong> {new Date(selectedTour.end_date).toISOString().split('T')[0]}</p>
-                <p><strong>Описание:</strong> {selectedTour.description || 'Описание отсутствует'}</p>
                 <p><strong>Услуги:</strong> {selectedTour.services || 'Не указаны'}</p>
                 <p><strong>Доступно мест:</strong> {selectedTour.available_count || 0}</p>
               </div>

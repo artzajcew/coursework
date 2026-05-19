@@ -9,6 +9,16 @@ const calculateDuration = (startDate, endDate) => {
   return diffDays;
 };
 
+const isHotTour = (startDate) => {
+  if (!startDate) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+  const daysUntilStart = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
+  return daysUntilStart >= 0 && daysUntilStart <= 5;
+};
+
 function ToursManagementPage() {
   const [tours, setTours] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -22,10 +32,8 @@ function ToursManagementPage() {
     price: '',
     start_date: '',
     end_date: '',
-    description: '',
     services: '',
     available_count: '',
-    is_hot: false,
   });
 
   useEffect(() => {
@@ -68,13 +76,10 @@ function ToursManagementPage() {
           name: editData.name,
           city: editData.city,
           price: parseFloat(editData.price),
-          duration: duration,
           start_date: editData.start_date,
           end_date: editData.end_date,
-          description: editData.description,
           services: editData.services,
           available_count: parseInt(editData.available_count),
-          is_hot: editData.is_hot,
         }),
       });
 
@@ -145,10 +150,8 @@ function ToursManagementPage() {
           duration: duration,
           start_date: newTour.start_date,
           end_date: newTour.end_date,
-          description: newTour.description,
           services: newTour.services,
           available_count: parseInt(newTour.available_count),
-          is_hot: newTour.is_hot,
         }),
       });
 
@@ -162,10 +165,8 @@ function ToursManagementPage() {
         price: '',
         start_date: '',
         end_date: '',
-        description: '',
         services: '',
         available_count: '',
-        is_hot: false,
       });
       setShowAddForm(false);
       alert('Тур создан');
@@ -250,15 +251,6 @@ function ToursManagementPage() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Описание</label>
-              <textarea
-                className="form-textarea"
-                value={newTour.description}
-                onChange={(e) => setNewTour({...newTour, description: e.target.value})}
-              />
-            </div>
-
-            <div className="form-group">
               <label className="form-label">Услуги</label>
               <textarea
                 className="form-textarea"
@@ -277,18 +269,6 @@ function ToursManagementPage() {
                 onChange={(e) => setNewTour({...newTour, available_count: e.target.value})}
                 required
               />
-            </div>
-
-            <div className="form-group">
-              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={newTour.is_hot}
-                  onChange={(e) => setNewTour({...newTour, is_hot: e.target.checked})}
-                  style={{ marginRight: '0.5rem' }}
-                />
-                Выгодное предложение
-              </label>
             </div>
 
             <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
@@ -310,7 +290,6 @@ function ToursManagementPage() {
               <th>Дата окончания</th>
               <th>Услуги</th>
               <th>Доступно мест</th>
-              <th>Выгодное</th>
               <th>Действия</th>
             </tr>
           </thead>
@@ -401,17 +380,6 @@ function ToursManagementPage() {
                     />
                   ) : (
                     tour.available_count
-                  )}
-                </td>
-                <td>
-                  {editingId === tour.id ? (
-                    <input
-                      type="checkbox"
-                      checked={editData.is_hot}
-                      onChange={(e) => handleChange('is_hot', e.target.checked)}
-                    />
-                  ) : (
-                    tour.is_hot ? 'ДА' : 'НЕТ'
                   )}
                 </td>
                 <td>

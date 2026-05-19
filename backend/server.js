@@ -101,6 +101,62 @@ app.get('/api/tours', async (req, res) => {
   }
 });
 
+app.post('/api/tours', async (req, res) => {
+  const { name, city, price, start_date, end_date, services, available_count } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO tours (name, city, price, start_date, end_date, services, available_count) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [name, city, price, start_date, end_date, services || null, available_count]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('POST tour error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/tours/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, city, price, start_date, end_date, services, available_count } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE tours SET name=$1, city=$2, price=$3, start_date=$4, end_date=$5, services=$6, available_count=$7 
+       WHERE id=$8 RETURNING *`,
+      [name, city, price, start_date, end_date, services || null, available_count, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Тур не найден' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('PUT tour error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/tours/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query('DELETE FROM tours WHERE id=$1 RETURNING *', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Тур не найден' });
+    }
+
+    res.json({ message: 'Тур удален' });
+  } catch (err) {
+    console.error('DELETE tour error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /**
  * @swagger
  * /api/sales:
