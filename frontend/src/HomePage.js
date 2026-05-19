@@ -96,36 +96,84 @@ function HomePage({ setCurrentPage }) {
         },
         body: JSON.stringify({
           client_id: user.id,
-          tour_id: selectedTour.id,
+          tour_name: selectedTour.name,
           quantity: 1,
-          available_left: selectedTour.available_slots - 1 || 0,
           sale_date: new Date().toISOString().split('T')[0],
         }),
       });
 
-      if (salesResponse.ok) {
-        alert('Ваша заявка успешно подана!');
-        setShowDetailsModal(false);
-        setSelectedTour(null);
-      } else {
+      if (!salesResponse.ok) {
         const data = await salesResponse.json();
         alert('Ошибка при создании продажи: ' + (data.error || 'неизвестная ошибка'));
+        return;
       }
+
+      // Проверяем статус клиента
+      const clientResponse = await fetch(`http://localhost:3000/api/clients/${user.id}`);
+      if (clientResponse.ok) {
+        const clientData = await clientResponse.json();
+        if (clientData.total_tours_purchased >= 3) {
+          alert(`🎉 Поздравляем! Вы постоянный клиент и получили скидку 10%!`);
+        } else {
+          const remaining = 3 - clientData.total_tours_purchased;
+          alert(`✅ Путевка успешно куплена!\nЕще ${remaining} путевок до статуса постоянного клиента.`);
+        }
+      } else {
+        alert('✅ Путевка успешно куплена!');
+      }
+
+      setShowDetailsModal(false);
+      setSelectedTour(null);
+      fetchTours();
     } catch (err) {
       console.error('Ошибка:', err);
       alert('Ошибка при подаче заявки: ' + err.message);
     }
   };
 
-  if (loading) {
-    return <div className="home-page"><p>Загрузка туров...</p></div>;
-  }
+  const getActiveClientTours = () => {
+    if (!user) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return tours.filter(tour => {
+      const endDate = new Date(tour.end_date);
+      endDate.setHours(0, 0, 0, 0);
+      return endDate >= today;
+    });
+  };
 
   return (
     <div className="home-page">
       <h1 className="page-title">Добро пожаловать в TourCompany</h1>
       
       {error && <div style={{ color: 'red', marginBottom: '1rem' }}>Ошибка: {error}</div>}
+      
+      {user && user.type === 'client' && getActiveClientTours().length > 0 && (
+        <>
+          <h2 className="section-title">📋 Мои актуальные путевки</h2>
+          <div className="tours-grid">
+            {getActiveClientTours().map(tour => (
+              <div key={tour.id} className="tour-card">
+                <div className="tour-image" style={{ backgroundColor: '#27ae60' }}>
+                  {tour.city}
+                </div>
+                <div className="tour-content">
+                  <h3 className="tour-title">{tour.name}</h3>
+                  <p className="tour-description">Путешествие</p>
+                  <div className="tour-meta">
+                    <span>Начало: {new Date(tour.start_date).toLocaleDateString('ru-RU')}</span>
+                  </div>
+                  <div className="tour-meta">
+                    <span>Конец: {new Date(tour.end_date).toLocaleDateString('ru-RU')}</span>
+                  </div>
+                  <div className="tour-price">₽ {tour.price.toLocaleString()}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
       
       {hotTours.length > 0 && (
         <>

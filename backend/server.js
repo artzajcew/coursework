@@ -177,6 +177,99 @@ app.get('/api/sales', async (req, res) => {
   }
 });
 
+app.post('/api/sales', async (req, res) => {
+  const { client_id, tour_name, quantity, sale_date } = req.body;
+
+  try {
+    // Добавляем продажу
+    const salesResult = await pool.query(
+      `INSERT INTO sales (client_id, tour_name, quantity, sale_date) 
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [client_id, tour_name, quantity, sale_date]
+    );
+
+    // Обновляем счетчик купленных путевок
+    await pool.query(
+      `UPDATE clients SET total_tours_purchased = total_tours_purchased + $1 
+       WHERE id = $2`,
+      [quantity, client_id]
+    );
+
+    // Если уже 3+ путевки, даем скидку 10%
+    const clientResult = await pool.query(
+      `SELECT total_tours_purchased FROM clients WHERE id = $1`,
+      [client_id]
+    );
+
+    if (clientResult.rows[0].total_tours_purchased >= 3) {
+      await pool.query(
+        `UPDATE clients SET discount = 10 WHERE id = $1`,
+        [client_id]
+      );
+    }
+
+    res.json(salesResult.rows[0]);
+  } catch (err) {
+    console.error('POST sales error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/clients/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM clients WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Клиент не найден' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/clients/:id', async (req, res) => {
+  const { id } = req.params;
+  const { full_name, phone, passport_number, discount, total_tours_purchased } = req.body;
+
+  try {
+    // Автоматически устанавливаем скидку 10% если 3+ тура
+    const calculatedDiscount = total_tours_purchased >= 3 ? 10 : (discount || 0);
+
+    const result = await pool.query(
+      `UPDATE clients SET full_name=$1, phone=$2, passport_number=$3, discount=$4, total_tours_purchased=$5 
+       WHERE id=$6 RETURNING *`,
+      [full_name, phone, passport_number || null, calculatedDiscount, total_tours_purchased, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Клиент не найден' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('PUT client error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/clients/:id/active-tours', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const result = await pool.query(`
+      SELECT t.* FROM tours t
+      JOIN client_tour ct ON t.id = ct.tour_id
+      WHERE ct.client_id = $1 AND t.end_date >= $2
+      ORDER BY t.start_date ASC
+    `, [id, today]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('GET active tours error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ========== ЗАПРОСЫ ПО ЗАДАНИЮ ==========
 
 /**

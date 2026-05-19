@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 function ClientsJournalPage() {
   const [clients, setClients] = useState([]);
+  const [clientActiveTours, setClientActiveTours] = useState({});
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -10,6 +11,21 @@ function ClientsJournalPage() {
   useEffect(() => {
     fetchClients();
   }, []);
+
+  const fetchActiveTours = async (clientId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/clients/${clientId}/active-tours`);
+      if (response.ok) {
+        const data = await response.json();
+        setClientActiveTours(prev => ({
+          ...prev,
+          [clientId]: data
+        }));
+      }
+    } catch (err) {
+      console.error('Ошибка загрузки путевок:', err);
+    }
+  };
 
   const fetchClients = async () => {
     try {
@@ -27,6 +43,9 @@ function ClientsJournalPage() {
       console.log('First client structure:', data[0]);
       setClients(data);
       setError(null);
+      
+      // Загружаем активные путевки для каждого клиента
+      data.forEach(client => fetchActiveTours(client.id));
     } catch (err) {
       console.error('Ошибка загрузки клиентов:', err);
       setError(err.message);
@@ -37,7 +56,13 @@ function ClientsJournalPage() {
 
   const handleEdit = (client) => {
     setEditingId(client.id);
-    setEditData({ ...client });
+    setEditData({
+      full_name: client.full_name,
+      phone: client.phone,
+      passport_number: client.passport_number,
+      discount: client.discount || 0,
+      total_tours_purchased: client.total_tours_purchased || 0,
+    });
   };
 
   const handleSave = async (id) => {
@@ -51,14 +76,16 @@ function ClientsJournalPage() {
           full_name: editData.full_name,
           phone: editData.phone,
           passport_number: editData.passport_number,
-          discount: editData.discount,
+          discount: parseFloat(editData.discount) || 0,
+          total_tours_purchased: parseInt(editData.total_tours_purchased) || 0,
         }),
       });
 
       if (!response.ok) throw new Error('Ошибка при сохранении');
       
+      const updatedClient = await response.json();
       setClients(clients.map(client => 
-        client.id === id ? editData : client
+        client.id === id ? updatedClient : client
       ));
       setEditingId(null);
       alert('Запись обновлена');
@@ -120,6 +147,8 @@ function ClientsJournalPage() {
               <th>Телефон</th>
               <th>Паспорт</th>
               <th>Дата регистрации</th>
+              <th>Актуальные путевки</th>
+              <th>Куплено путевок</th>
               <th>Скидка (%)</th>
               <th>Действия</th>
             </tr>
@@ -167,12 +196,32 @@ function ClientsJournalPage() {
                   {client.created_at ? new Date(client.created_at).toLocaleDateString('ru-RU') : '-'}
                 </td>
                 <td>
+                  {clientActiveTours[client.id]?.map(tour => tour.name).join(', ') || '-'}
+                </td>
+                <td>
+                  {editingId === client.id ? (
+                    <input
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={editData.total_tours_purchased || 0}
+                      onChange={(e) => handleChange('total_tours_purchased', parseInt(e.target.value) || 0)}
+                      style={{ width: '100%' }}
+                    />
+                  ) : (
+                    <>
+                      {client.total_tours_purchased || 0}
+                      {(client.total_tours_purchased || 0) >= 3 && ' ⭐'}
+                    </>
+                  )}
+                </td>
+                <td>
                   {editingId === client.id ? (
                     <input
                       type="number"
                       step="0.01"
-                      value={editData.discount}
-                      onChange={(e) => handleChange('discount', e.target.value)}
+                      value={editData.discount || 0}
+                      onChange={(e) => handleChange('discount', parseFloat(e.target.value) || 0)}
                       style={{ width: '100%' }}
                     />
                   ) : (
