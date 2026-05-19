@@ -464,6 +464,10 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+app.get('/api/auth/me', (req, res) => {
+  res.json({ valid: true });
+});
+
 /**
  * @swagger
  * /api/register:
