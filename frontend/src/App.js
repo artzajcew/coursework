@@ -102,7 +102,7 @@ function App() {
           <>
             {userRole === 'client' && (
               <>
-                {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} />}
+                {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} isLoggedIn={isLoggedIn} />}
               </>
             )}
             {userRole === 'employee' && (

@@ -417,6 +417,83 @@ body {
   color: #2c2c2c;
 }
 
+/* Tour Details Modal */
+.tour-details {
+  text-align: left;
+}
+
+.tour-details h2 {
+  font-size: 1.8rem;
+  color: #2c2c2c;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+.details-info {
+  margin: 1.5rem 0;
+  padding: 0;
+  background: transparent;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ecf0f1;
+  align-items: start;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 700;
+  color: #1a1a1a;
+  font-size: 0.95rem;
+}
+
+.detail-value {
+  color: #2c2c2c;
+  font-size: 0.95rem;
+}
+
+.description-row {
+  grid-template-columns: 1fr;
+}
+
+.description-text {
+  margin: 0;
+  line-height: 1.7;
+  color: #2c2c2c;
+}
+
+.price-row {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 10px;
+  grid-template-columns: 140px 1fr;
+  border: 2px solid #27ae60;
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+}
+
+.detail-value.price {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #27ae60;
+}
+
+.btn-large {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  width: 100%;
+}
+
 /* Tables */
 .table-container {
   background: white;

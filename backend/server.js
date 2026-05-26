@@ -248,7 +248,7 @@ app.put('/api/clients/:id', async (req, res) => {
   const { full_name, phone, passport_number, discount, total_tours_purchased } = req.body;
 
   try {
-    // Автоматически устанавливаем скидку 10% если 3+ тура
+    // Автоматически устанавливаем скидку 10% если 3+ тура, иначе используем переданную скидку
     const calculatedDiscount = total_tours_purchased >= 3 ? 10 : (discount || 0);
 
     const result = await pool.query(
@@ -309,11 +309,12 @@ app.get('/api/clients/by-city/:city', async (req, res) => {
   const { city } = req.params;
   try {
     const result = await pool.query(`
-      SELECT c.*, t.city, t.name as tour_name 
+      SELECT DISTINCT c.*, t.city, t.name as tour_name 
       FROM clients c
-      JOIN client_tour ct ON c.id = ct.client_id
-      JOIN tours t ON ct.tour_id = t.id
-      WHERE t.city = $1
+      LEFT JOIN client_tour ct ON c.id = ct.client_id
+      LEFT JOIN tours t ON ct.tour_id = t.id
+      WHERE t.city ILIKE $1 OR $1 = ''
+      ORDER BY c.id
     `, [city]);
     res.json(result.rows);
   } catch (err) {
@@ -792,6 +793,44 @@ app.post('/api/hash-password', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     res.json({ password, hash: hashedPassword });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/sales/:id', async (req, res) => {
+  const { id } = req.params;
+  const { quantity, available_left, sale_date } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE sales SET quantity=$1, available_left=$2, sale_date=$3 
+       WHERE id=$4 RETURNING *`,
+      [quantity, available_left, sale_date, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Продажа не найдена' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('PUT sales error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/sales/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM sales WHERE id=$1 RETURNING *', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Продажа не найдена' });
+    }
+
+    res.json({ message: 'Продажа удалена' });
+  } catch (err) {
+    console.error('DELETE sales error:', err);
     res.status(500).json({ error: err.message });
   }
 });

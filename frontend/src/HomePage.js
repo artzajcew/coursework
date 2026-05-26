@@ -6,59 +6,66 @@ import sochiImg from './img/sochi.jpg';
 import barcelonaImg from './img/barcelona.jpg';
 import parisImg from './img/paris.jpg';
 
-function HomePage({ setCurrentPage }) {
+function HomePage({ setCurrentPage, isLoggedIn }) {
   const [tours, setTours] = useState([]);
   const [hotTours, setHotTours] = useState([]);
   const [selectedTour, setSelectedTour] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-  });
 
   useEffect(() => {
     // Только эти 4 тура
     const mockTours = [
       {
         id: 1,
-        title: 'Тур в Анталью',
+        name: 'Тур в Анталью',
         description: 'Прекрасный отдых на пляжах Антальи с посещением храмов и нац. парков',
         price: 45000,
         duration: '7 дней',
+        city: 'Анталья',
+        start_date: '2026-06-15',
+        available_count: 12,
         image: antalyaImg,
-        isHot: true,
+        is_hot: true,
       },
       {
         id: 2,
-        title: 'Экскурсия в Сочи',
+        name: 'Экскурсия в Сочи',
         description: 'Путешествие по горам и побережью Черного моря',
         price: 35000,
         duration: '7 дней',
+        city: 'Сочи',
+        start_date: '2026-06-20',
+        available_count: 8,
         image: sochiImg,
-        isHot: true,
+        is_hot: true,
       },
       {
         id: 3,
-        title: 'Отдых в Барселоне',
+        name: 'Отдых в Барселоне',
         description: 'Саграда Фамилия, парк Гуэль и пляжи Средиземного моря',
         price: 55000,
         duration: '8 дней',
+        city: 'Барселона',
+        start_date: '2026-07-01',
+        available_count: 5,
         image: barcelonaImg,
-        isHot: false,
+        is_hot: false,
       },
       {
         id: 4,
-        title: 'Тур в Париж',
+        name: 'Тур в Париж',
         description: 'Эйфелева башня, Лувр и шопинг на Елисейских полях',
         price: 70000,
         duration: '6 дней',
+        city: 'Париж',
+        start_date: '2026-07-10',
+        available_count: 3,
         image: parisImg,
-        isHot: true,
+        is_hot: true,
       },
     ];
 
-    setHotTours(mockTours.filter(tour => tour.isHot));
+    setHotTours(mockTours.filter(tour => tour.is_hot));
     setTours(mockTours);
   }, []);
 
@@ -67,33 +74,14 @@ function HomePage({ setCurrentPage }) {
     setShowModal(true);
   };
 
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmitApplication = (e) => {
-    e.preventDefault();
-    if (formData.fullName && formData.email && formData.phone) {
-      const applications = JSON.parse(localStorage.getItem('applications') || '[]');
-      applications.push({
-        id: Date.now(),
-        tourId: selectedTour.id,
-        tourName: selectedTour.title,
-        ...formData,
-        date: new Date().toISOString(),
-      });
-      localStorage.setItem('applications', JSON.stringify(applications));
-      
-      alert('Ваша заявка успешно подана!');
-      setShowModal(false);
-      setFormData({ fullName: '', email: '', phone: '' });
-    } else {
-      alert('Пожалуйста, заполните все поля');
+  const handleSubmitApplication = () => {
+    if (!isLoggedIn) {
+      alert('Пожалуйста, войдите в систему для подачи заявки');
+      setCurrentPage('login');
+      return;
     }
+    alert('Ваша заявка успешно подана! Проверьте ваш личный кабинет.');
+    setShowModal(false);
   };
 
   return (
@@ -110,13 +98,13 @@ function HomePage({ setCurrentPage }) {
                 <div className="tour-image">
                   <img 
                     src={tour.image} 
-                    alt={tour.title}
+                    alt={tour.name}
                     className="tour-img"
                   />
                 </div>
                 <div className="tour-content">
                   <span className="hot-badge">ГОРЯЧЕЕ ПРЕДЛОЖЕНИЕ</span>
-                  <h3 className="tour-title">{tour.title}</h3>
+                  <h3 className="tour-title">{tour.name || tour.title}</h3>
                   <p className="tour-description">{tour.description}</p>
                   <div className="tour-meta">
                     <span className="tour-duration">{tour.duration}</span>
@@ -143,13 +131,13 @@ function HomePage({ setCurrentPage }) {
             <div className="tour-image">
               <img 
                 src={tour.image} 
-                alt={tour.title}
+                alt={tour.name}
                 className="tour-img"
               />
             </div>
             <div className="tour-content">
               {tour.isHot && <span className="hot-badge">ГОРЯЧЕЕ ПРЕДЛОЖЕНИЕ</span>}
-              <h3 className="tour-title">{tour.title}</h3>
+              <h3 className="tour-title">{tour.name || tour.title}</h3>
               <p className="tour-description">{tour.description}</p>
               <div className="tour-meta">
                 <span className="tour-duration">{tour.duration}</span>
@@ -166,7 +154,7 @@ function HomePage({ setCurrentPage }) {
         ))}
       </div>
 
-      {/* Модальное окно для заявки */}
+      {/* Модальное окно с информацией о туре */}
       <div className={`modal ${showModal ? 'active' : ''}`}>
         <div className="modal-content">
           <span 
@@ -175,45 +163,57 @@ function HomePage({ setCurrentPage }) {
           >
             &times;
           </span>
-          <h2>Заявка на тур: {selectedTour?.title}</h2>
-          <form onSubmit={handleSubmitApplication}>
-            <div className="form-group">
-              <label className="form-label">ФИО</label>
-              <input
-                type="text"
-                name="fullName"
-                className="form-input"
-                value={formData.fullName}
-                onChange={handleFormChange}
-                placeholder="Введите ваше ФИО"
-              />
+          {selectedTour && (
+            <div className="tour-details">
+              <h2>{selectedTour.name || selectedTour.title}</h2>
+              {selectedTour.is_hot && <span className="hot-badge">ГОРЯЧЕЕ ПРЕДЛОЖЕНИЕ</span>}
+              
+              <div className="details-info">
+                <div className="detail-row">
+                  <span className="detail-label">Город:</span>
+                  <span className="detail-value">{selectedTour.city}</span>
+                </div>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Дата вылета:</span>
+                  <span className="detail-value">
+                    {new Date(selectedTour.start_date).toLocaleDateString('ru-RU', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </span>
+                </div>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Длительность:</span>
+                  <span className="detail-value">{selectedTour.duration}</span>
+                </div>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Доступные места:</span>
+                  <span className="detail-value">{selectedTour.available_count} мест</span>
+                </div>
+                
+                <div className="detail-row description-row">
+                  <span className="detail-label">Описание:</span>
+                  <p className="description-text">{selectedTour.description}</p>
+                </div>
+                
+                <div className="detail-row price-row">
+                  <span className="detail-label">Стоимость:</span>
+                  <span className="detail-value price">₽ {selectedTour.price.toLocaleString()}</span>
+                </div>
+              </div>
+              
+              <button 
+                className="btn btn-primary btn-large"
+                onClick={handleSubmitApplication}
+              >
+                Подать заявку
+              </button>
             </div>
-            <div className="form-group">
-              <label className="form-label">Email</label>
-              <input
-                type="email"
-                name="email"
-                className="form-input"
-                value={formData.email}
-                onChange={handleFormChange}
-                placeholder="Введите ваш email"
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Телефон</label>
-              <input
-                type="tel"
-                name="phone"
-                className="form-input"
-                value={formData.phone}
-                onChange={handleFormChange}
-                placeholder="Введите ваш телефон"
-              />
-            </div>
-            <button type="submit" className="btn btn-success">
-              Подать заявку
-            </button>
-          </form>
+          )}
         </div>
       </div>
     </div>

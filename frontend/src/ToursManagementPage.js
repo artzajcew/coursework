@@ -147,7 +147,7 @@ function ToursManagementPage() {
           name: newTour.name,
           city: newTour.city,
           price: parseFloat(newTour.price),
-          duration: duration,
+          
           start_date: newTour.start_date,
           end_date: newTour.end_date,
           services: newTour.services,
